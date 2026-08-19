@@ -201,3 +201,40 @@ def plot_rate_by_category(df, cat_col, target_col="is_canceled", min_n=100,
     plt.xticks(rotation=40, ha="right")
     plt.tight_layout()
     return ax, g
+
+def plot_rate_by_time(df, time_col, target_col="is_canceled", group_col=None,
+                       min_n=1, ax=None, title=None, color="#2E5EAA"):
+    """Line-chart version of plot_rate_by_category, for when x-axis order
+    is a real time/sequence axis (months, weeks, years) rather than a set
+    of categories to compare by height. Always uses natural order, never
+    sorts by rate -- a line chart sorted by height isn't a trend anymore.
+ 
+    `time_col` should already be sortable in the order you want on the
+    x-axis (e.g. an ordered Categorical of month names, or a plain
+    numeric/year column).
+ 
+    group_col draws one line per category (e.g. group_col='hotel') so
+    seasonal or trend patterns can be compared across groups on shared
+    axes, instead of pooling over a mix that might behave differently.
+ 
+    Example: plot_rate_by_time(df, 'arrival_date_month', target_col='cancelled')
+    Example: plot_rate_by_time(df, 'arrival_date_month', target_col='cancelled', group_col='hotel')
+    """
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(8, 4.5))
+    if group_col is None:
+        summary = rate_by_category(df, time_col, target_col, min_n, sort_by_rate=False)
+        summary["rate_pct"].plot(kind="line", marker="o", ax=ax, color=color)
+    else:
+        summary = {}
+        for name, sub in df.groupby(group_col, observed=True):
+            g = rate_by_category(sub, time_col, target_col, min_n, sort_by_rate=False)
+            g["rate_pct"].plot(kind="line", marker="o", ax=ax, label=str(name))
+            summary[name] = g
+        ax.legend(title=group_col)
+    ax.set_ylabel(f"{target_col} rate (%)")
+    ax.set_xlabel(time_col)
+    ax.set_title(title or f"{target_col} rate over {time_col}")
+    plt.xticks(rotation=40, ha="right")
+    plt.tight_layout()
+    return ax, summary
