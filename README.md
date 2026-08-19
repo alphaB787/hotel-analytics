@@ -52,12 +52,12 @@ jupyter notebook notebooks/
 ```
 
 `01_data_investigation.ipynb` profiles the raw data and establishes the
-cleaning rules. `02_eda.ipynb` loads the cleaned output and answers the
+cleaning rules. `02_exploratory_data_analysis.ipynb` loads the cleaned output and answers the
 business question.
 
 ## Data model
 
-Star schema: `fact_bookings` (one row per booking) with seven dimensions —
+Star schema: `fact_bookings` (one row per booking) with seven dimensions
 hotel, customer profile, date, country, meal, distribution channel, and
 market segment.
 
@@ -68,7 +68,7 @@ and `status_date_key` (a role-playing dimension). Full DDL in
 [`sql/star_schema.sql`](sql/star_schema.sql).
 
 Note that `dim_customer_profile` is a *profile* dimension, not a customer
-identity one — this dataset has no guest ID, so the key identifies a
+identity one, this dataset has no guest ID, so the key identifies a
 combination of customer type, repeat-guest flag, and deposit type rather
 than an individual person.
 
@@ -82,7 +82,7 @@ about what **not** to remove:
   earlier version of this analysis dropped them and reported 27.5%
   cancellation instead of 37.1%.
 - **Zero-night bookings are kept.** Checking `reservation_status` showed
-  ~95% are completed check-outs, not cancellations — dropping them would
+  ~95% are completed check-outs, not cancellations. Dropping them would
   have filtered the data on a rule unrelated to the question being asked.
 - **Zero-guest bookings are dropped**, since a reservation for nobody
   isn't a meaningful record. Where a booking listed children or babies but
@@ -98,7 +98,7 @@ describe **associations**, not proven causes.
 Three large effects are excluded from the conclusions on purpose:
 
 - **Non-refundable deposits show ~99% cancellation.** The direction makes
-  no sense — guests who pay upfront should cancel *less*. Likely a
+  no sense, guests who pay upfront should cancel *less*. Likely a
   recording issue, and needs checking against the source system.
 - **Room type changed** is only known once a guest has arrived, so it
   can't predict cancellation; it just identifies who showed up.
