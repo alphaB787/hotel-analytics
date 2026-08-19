@@ -36,6 +36,10 @@ def clean_hotel_data(df: pd.DataFrame) -> pd.DataFrame:
     # Only four bookings have missing children values.
     df["children"] = df["children"].fillna(0).astype(int)
 
+    # Replace adults with 1 where there are children or babies but no adults.
+    condition = (df["adults"] == 0) & ((df["children"] > 0) | (df["babies"] > 0))
+    df.loc[condition, "adults"] = 1
+
     # Missing country is retained as an explicit unknown category.
     df["country"] = df["country"].fillna("Unknown")
 
@@ -47,7 +51,7 @@ def clean_hotel_data(df: pd.DataFrame) -> pd.DataFrame:
     # ------------------------------------------------------------------
     # 2. Derived booking attributes
     # ------------------------------------------------------------------
-
+    
     # Total guest is the sum of adults, children, and babies.
     df["total_guests"] = (
         df["adults"]
@@ -103,8 +107,8 @@ def clean_hotel_data(df: pd.DataFrame) -> pd.DataFrame:
     # 4. Clearly invalid records
     # ------------------------------------------------------------------
 
-    # The booking should have at least one guest. So exclude records with zero total guests.
-    df = df[df["total_guests"] > 0]
+    # The booking should have at least one adult (one guest). So exclude records with zero total guests.
+    df = df[(df["total_guests"] > 0) & (df["adults"] > 0)]
 
     # Negative ADR is not a meaningful room rate.
     df = df[df["adr"] >= 0]
@@ -136,7 +140,7 @@ def main() -> None:
     print(f"Processed shape: {df_clean.shape}")
     print(f"Rows removed:    {len(df_raw) - len(df_clean):,}")
 
-    # save_data(df_clean, OUTPUT_PATH)
+    save_data(df_clean, OUTPUT_PATH)
 
 
 if __name__ == "__main__":
